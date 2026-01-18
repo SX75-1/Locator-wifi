@@ -1,0 +1,620 @@
+<!doctype html>
+<html lang="uk">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Internet Locator</title>
+  <style>
+    :root{
+      --bg:#0b1220; --card:#111b2f; --muted:#9fb1d1; --text:#eaf2ff;
+      --accent:#4dd4ff; --accent2:#7c5cff; --bad:#ff5577; --ok:#35ff9a;
+      --border: rgba(255,255,255,.08);
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family: -apple-system, system-ui, Segoe UI, Roboto, Arial;
+      background: radial-gradient(1200px 800px at 50% -10%, rgba(77,212,255,.16), transparent 60%),
+                  radial-gradient(900px 700px at 80% 20%, rgba(124,92,255,.14), transparent 55%),
+                  var(--bg);
+      color:var(--text);
+      padding: 18px 14px 22px;
+    }
+    h1{margin:0 0 10px; font-size:18px; font-weight:700; letter-spacing:.2px}
+    .wrap{max-width:560px; margin:0 auto}
+    .row{display:flex; gap:10px; flex-wrap:wrap}
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,.04), transparent 70%), var(--card);
+      border:1px solid var(--border);
+      border-radius:16px;
+      padding:14px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.25);
+    }
+    .grow{flex:1 1 260px}
+    .btn{
+      appearance:none; border:1px solid var(--border); background: rgba(255,255,255,.06);
+      color:var(--text); padding:12px 14px; border-radius:14px;
+      font-weight:650; letter-spacing:.2px; cursor:pointer;
+      display:inline-flex; align-items:center; gap:8px;
+    }
+    .btn.primary{ background: linear-gradient(135deg, rgba(77,212,255,.25), rgba(124,92,255,.22)); border-color: rgba(77,212,255,.25); }
+    .btn.danger{ background: rgba(255,85,119,.14); border-color: rgba(255,85,119,.22); }
+    .btn:disabled{opacity:.5; cursor:not-allowed}
+    .pill{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:8px 10px; border-radius:999px;
+      border:1px solid var(--border);
+      color:var(--muted); background: rgba(255,255,255,.04);
+      font-size:12.5px;
+    }
+    .grid{
+      display:grid; grid-template-columns: 1fr 1fr; gap:10px;
+    }
+    .kv{
+      border:1px solid var(--border); border-radius:14px; padding:10px;
+      background: rgba(255,255,255,.03);
+    }
+    .k{font-size:12px; color:var(--muted)}
+    .v{font-size:15px; font-weight:700; margin-top:4px}
+    .muted{color:var(--muted)}
+    .small{font-size:12px}
+    .sep{height:1px; background: var(--border); margin:12px 0}
+    .arrowBox{
+      display:flex; align-items:center; justify-content:center;
+      padding: 18px 0 6px;
+    }
+    .arrowRing{
+      width: 170px; height:170px; border-radius: 50%;
+      border: 1px solid var(--border);
+      background: radial-gradient(circle at 50% 35%, rgba(77,212,255,.12), rgba(255,255,255,.02) 65%);
+      position: relative;
+      box-shadow: inset 0 0 0 6px rgba(255,255,255,.02);
+    }
+    .arrowNeedle{
+      position:absolute; left:50%; top:50%;
+      width: 0; height: 0;
+      border-left: 16px solid transparent;
+      border-right: 16px solid transparent;
+      border-bottom: 62px solid var(--accent);
+      transform: translate(-50%, -72px) rotate(0deg);
+      transform-origin: 50% 72px;
+      filter: drop-shadow(0 10px 18px rgba(77,212,255,.25));
+    }
+    .north{
+      position:absolute; left:50%; top:8px; transform:translateX(-50%);
+      font-size:12px; color:var(--muted);
+      letter-spacing:.8px;
+    }
+    .statusDot{
+      width:10px; height:10px; border-radius:50%;
+      background: rgba(255,255,255,.25);
+    }
+    .dotOk{background: var(--ok)}
+    .dotBad{background: var(--bad)}
+    textarea{
+      width:100%; min-height:88px; resize:vertical;
+      background: rgba(0,0,0,.18); color: var(--text);
+      border:1px solid var(--border); border-radius:14px;
+      padding:10px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size:12px;
+    }
+    .list{
+      max-height: 220px; overflow:auto; padding-right:4px;
+    }
+    .item{
+      padding:10px; border:1px solid var(--border); border-radius:14px;
+      background: rgba(255,255,255,.03);
+      display:flex; justify-content:space-between; gap:10px;
+      margin-bottom:8px;
+    }
+    .item b{font-size:13px}
+    .tag{
+      font-size:12px; padding:6px 10px; border-radius:999px;
+      border:1px solid var(--border);
+      background: rgba(255,255,255,.04);
+      white-space:nowrap;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>📡 Internet Locator (сканер “де краще тягне”)</h1>
+
+    <div class="row">
+      <div class="card grow">
+        <div class="row" style="align-items:center; justify-content:space-between">
+          <span class="pill"><span id="netDot" class="statusDot"></span><span id="netText">Готово</span></span>
+          <span class="pill">Точки: <b id="pointsCount">0</b></span>
+        </div>
+
+        <div class="arrowBox">
+          <div class="arrowRing">
+            <div class="north">N</div>
+            <div id="needle" class="arrowNeedle"></div>
+          </div>
+        </div>
+
+        <div class="grid">
+          <div class="kv">
+            <div class="k">Відстань до кращої точки</div>
+            <div class="v" id="bestDist">—</div>
+          </div>
+          <div class="kv">
+            <div class="k">Напрямок (азимут)</div>
+            <div class="v" id="bestBear">—</div>
+          </div>
+          <div class="kv">
+            <div class="k">Найкраща швидкість</div>
+            <div class="v" id="bestSpeed">—</div>
+          </div>
+          <div class="kv">
+            <div class="k">Пінг</div>
+            <div class="v" id="bestPing">—</div>
+          </div>
+        </div>
+
+        <div class="sep"></div>
+
+        <div class="row">
+          <button class="btn primary" id="btnStart">▶️ Start Scan</button>
+          <button class="btn danger" id="btnStop" disabled>⏹ Stop</button>
+          <button class="btn" id="btnCompass">🧭 Дозволити компас</button>
+          <button class="btn" id="btnClear">🗑 Очистити точки</button>
+        </div>
+
+        <div class="sep"></div>
+
+        <div class="small muted">
+          Працює так: ти ходиш — воно робить маленькі тести (пінг + даунлоад), прив’язує результат до GPS-точки,
+          вибирає “best spot” і веде стрілкою.
+        </div>
+      </div>
+
+      <div class="card grow">
+        <div class="k">Логи</div>
+        <textarea id="log" readonly></textarea>
+
+        <div class="sep"></div>
+
+        <div class="k">Останні точки</div>
+        <div class="list" id="list"></div>
+      </div>
+    </div>
+  </div>
+
+<script>
+(() => {
+  // -------------------------
+  // Settings (можеш міняти)
+  // -------------------------
+  const SETTINGS = {
+    scanIntervalMs: 5500,          // як часто робити тест
+    minMoveMeters: 5,              // не писати точку, якщо ти майже не зрушив
+    downloadBytes: 450000,         // розмір тесту (байти). Менше = легше для слабкого інтернету
+    maxPoints: 80,                 // ліміт збережених точок
+  };
+
+  // -------------------------
+  // State
+  // -------------------------
+  let scanning = false;
+  let watchId = null;
+  let timerId = null;
+
+  let currentPos = null;           // {lat, lon, acc}
+  let headingDeg = null;           // 0..360
+  let bestPoint = null;            // {lat, lon, score, downMbps, pingMs, t}
+
+  const LS_KEY = "internet_locator_points_v1";
+  let points = loadPoints();
+
+  // -------------------------
+  // UI refs
+  // -------------------------
+  const el = (id) => document.getElementById(id);
+  const logEl = el("log");
+  const needle = el("needle");
+
+  const netDot = el("netDot");
+  const netText = el("netText");
+  const pointsCount = el("pointsCount");
+
+  const bestDist = el("bestDist");
+  const bestBear = el("bestBear");
+  const bestSpeed = el("bestSpeed");
+  const bestPing = el("bestPing");
+
+  const btnStart = el("btnStart");
+  const btnStop = el("btnStop");
+  const btnCompass = el("btnCompass");
+  const btnClear = el("btnClear");
+  const listEl = el("list");
+
+  // -------------------------
+  // Helpers
+  // -------------------------
+  function log(msg){
+    const t = new Date().toLocaleTimeString();
+    logEl.value = `[${t}] ${msg}\n` + logEl.value;
+  }
+  function clamp360(x){
+    x = x % 360;
+    if (x < 0) x += 360;
+    return x;
+  }
+  function toRad(d){ return d * Math.PI / 180; }
+  function toDeg(r){ return r * 180 / Math.PI; }
+
+  // Haversine distance (m)
+  function distanceMeters(a, b){
+    const R = 6371000;
+    const dLat = toRad(b.lat - a.lat);
+    const dLon = toRad(b.lon - a.lon);
+    const lat1 = toRad(a.lat);
+    const lat2 = toRad(b.lat);
+    const s = Math.sin(dLat/2)**2 + Math.cos(lat1)*Math.cos(lat2)*Math.sin(dLon/2)**2;
+    return 2 * R * Math.asin(Math.min(1, Math.sqrt(s)));
+  }
+
+  // Bearing from a -> b (deg, 0=N)
+  function bearingDeg(a, b){
+    const lat1 = toRad(a.lat), lat2 = toRad(b.lat);
+    const dLon = toRad(b.lon - a.lon);
+    const y = Math.sin(dLon) * Math.cos(lat2);
+    const x = Math.cos(lat1)*Math.sin(lat2) - Math.sin(lat1)*Math.cos(lat2)*Math.cos(dLon);
+    return clamp360(toDeg(Math.atan2(y, x)));
+  }
+
+  function fmtM(m){
+    if (!isFinite(m)) return "—";
+    if (m < 1000) return `${Math.round(m)} м`;
+    return `${(m/1000).toFixed(2)} км`;
+  }
+  function fmtDeg(d){
+    if (!isFinite(d)) return "—";
+    return `${Math.round(d)}°`;
+  }
+  function fmtMbps(x){
+    if (!isFinite(x)) return "—";
+    if (x < 1) return `${x.toFixed(2)} Mbps`;
+    return `${x.toFixed(1)} Mbps`;
+  }
+  function fmtMs(x){
+    if (!isFinite(x)) return "—";
+    return `${Math.round(x)} ms`;
+  }
+
+  function setNetStatus(ok, text){
+    netDot.className = "statusDot " + (ok ? "dotOk" : "dotBad");
+    netText.textContent = text;
+  }
+
+  function savePoints(){
+    try{
+      localStorage.setItem(LS_KEY, JSON.stringify(points.slice(-SETTINGS.maxPoints)));
+    }catch(e){}
+  }
+  function loadPoints(){
+    try{
+      const raw = localStorage.getItem(LS_KEY);
+      if (!raw) return [];
+      const arr = JSON.parse(raw);
+      if (!Array.isArray(arr)) return [];
+      return arr.filter(p => p && typeof p.lat==="number" && typeof p.lon==="number");
+    }catch(e){
+      return [];
+    }
+  }
+
+  // score: більше краще
+  // робимо простий баланс: швидкість важлива, пінг теж (але менше)
+  function calcScore(downMbps, pingMs){
+    const s = (downMbps || 0) * 1.0 + (pingMs ? (1200 / (pingMs + 60)) : 0);
+    return s;
+  }
+
+  function updateBest(){
+    if (!points.length){
+      bestPoint = null;
+      bestDist.textContent = "—";
+      bestBear.textContent = "—";
+      bestSpeed.textContent = "—";
+      bestPing.textContent = "—";
+      updateNeedle();
+      return;
+    }
+    // best by score
+    bestPoint = points.reduce((a,b)=> (b.score > a.score ? b : a), points[0]);
+    bestSpeed.textContent = fmtMbps(bestPoint.downMbps);
+    bestPing.textContent = fmtMs(bestPoint.pingMs);
+    updateNeedle();
+  }
+
+  function updateNeedle(){
+    if (!currentPos || !bestPoint){
+      needle.style.transform = `translate(-50%, -72px) rotate(0deg)`;
+      bestDist.textContent = "—";
+      bestBear.textContent = "—";
+      return;
+    }
+    const a = {lat: currentPos.lat, lon: currentPos.lon};
+    const b = {lat: bestPoint.lat, lon: bestPoint.lon};
+    const dist = distanceMeters(a,b);
+    const bear = bearingDeg(a,b);
+
+    bestDist.textContent = fmtM(dist);
+    bestBear.textContent = fmtDeg(bear);
+
+    const hdg = (headingDeg == null) ? 0 : headingDeg;
+    const rel = clamp360(bear - hdg); // куди крутити відносно того, куди дивиться телефон
+    needle.style.transform = `translate(-50%, -72px) rotate(${rel}deg)`;
+  }
+
+  function renderList(){
+    pointsCount.textContent = String(points.length);
+    listEl.innerHTML = "";
+    const last = points.slice(-12).reverse();
+    for (const p of last){
+      const div = document.createElement("div");
+      div.className = "item";
+      const left = document.createElement("div");
+      left.innerHTML = `<b>${fmtMbps(p.downMbps)}</b><div class="small muted">ping ${fmtMs(p.pingMs)} · acc ${Math.round(p.acc||0)}м</div>`;
+      const right = document.createElement("div");
+      const isBest = bestPoint && p.t === bestPoint.t;
+      right.innerHTML = `<span class="tag" style="${isBest ? "border-color: rgba(53,255,154,.35); background: rgba(53,255,154,.12)" : ""}">${isBest ? "BEST" : "score " + p.score.toFixed(1)}</span>`;
+      div.appendChild(left);
+      div.appendChild(right);
+      listEl.appendChild(div);
+    }
+  }
+
+  // -------------------------
+  // Internet tests
+  // -------------------------
+  async function testPing(){
+    // Беремо легкий endpoint, який майже завжди доступний
+    // no-cors щоб не паритись з CORS; нам потрібен тільки час
+    const url = "https://www.google.com/generate_204?cache=" + Math.random();
+    const t0 = performance.now();
+    try{
+      await fetch(url, {method:"GET", mode:"no-cors", cache:"no-store"});
+      return performance.now() - t0;
+    }catch(e){
+      return NaN;
+    }
+  }
+
+  async function testDownloadMbps(){
+    // Cloudflare speed endpoint (часто дає CORS на arrayBuffer)
+    const bytes = SETTINGS.downloadBytes;
+    const url = `https://speed.cloudflare.com/__down?bytes=${bytes}&cache=${Math.random()}`;
+    const t0 = performance.now();
+    try{
+      const r = await fetch(url, {cache:"no-store"});
+      const buf = await r.arrayBuffer();
+      const dt = (performance.now() - t0) / 1000;
+      const bits = (buf.byteLength || bytes) * 8;
+      const mbps = (bits / dt) / 1e6;
+      return mbps;
+    }catch(e){
+      // fallback через Image (інколи рятує)
+      return await testDownloadViaImage(bytes);
+    }
+  }
+
+  function testDownloadViaImage(bytes){
+    return new Promise((resolve) => {
+      const url = `https://speed.cloudflare.com/__down?bytes=${bytes}&cache=${Math.random()}`;
+      const img = new Image();
+      const t0 = performance.now();
+      img.onload = () => {
+        const dt = (performance.now() - t0) / 1000;
+        const mbps = ((bytes*8) / dt) / 1e6;
+        resolve(mbps);
+      };
+      img.onerror = () => resolve(NaN);
+      img.src = url;
+    });
+  }
+
+  // -------------------------
+  // Position tracking
+  // -------------------------
+  function startGeo(){
+    if (!navigator.geolocation){
+      log("❌ Geolocation не підтримується.");
+      return;
+    }
+
+    watchId = navigator.geolocation.watchPosition(
+      (pos) => {
+        currentPos = {
+          lat: pos.coords.latitude,
+          lon: pos.coords.longitude,
+          acc: pos.coords.accuracy
+        };
+        updateNeedle();
+      },
+      (err) => {
+        log("❌ Geo error: " + (err && err.message ? err.message : "невідомо"));
+        setNetStatus(false, "Немає доступу до гео");
+      },
+      { enableHighAccuracy:true, maximumAge: 500, timeout: 12000 }
+    );
+  }
+
+  function stopGeo(){
+    if (watchId != null){
+      navigator.geolocation.clearWatch(watchId);
+      watchId = null;
+    }
+  }
+
+  // -------------------------
+  // Compass / orientation
+  // -------------------------
+  function attachOrientation(){
+    window.addEventListener("deviceorientation", (e) => {
+      // iOS Safari часто дає webkitCompassHeading (0..360)
+      if (typeof e.webkitCompassHeading === "number") {
+        headingDeg = clamp360(e.webkitCompassHeading);
+      } else if (typeof e.alpha === "number") {
+        // alpha — 0..360, але може бути “відносний”
+        headingDeg = clamp360(360 - e.alpha);
+      } else {
+        headingDeg = null;
+      }
+      updateNeedle();
+    }, true);
+
+    window.addEventListener("deviceorientationabsolute", (e) => {
+      if (typeof e.alpha === "number") {
+        headingDeg = clamp360(360 - e.alpha);
+        updateNeedle();
+      }
+    }, true);
+  }
+
+  async function requestCompassPermission(){
+    try{
+      if (typeof DeviceOrientationEvent !== "undefined" &&
+          typeof DeviceOrientationEvent.requestPermission === "function") {
+        const res = await DeviceOrientationEvent.requestPermission();
+        if (res === "granted"){
+          log("✅ Компас дозволено.");
+          setNetStatus(true, "Компас активний");
+        } else {
+          log("❌ Компас заборонено.");
+          setNetStatus(false, "Компас недоступний");
+        }
+      } else {
+        // Android / старі браузери
+        log("ℹ️ Додатковий дозвіл компаса не потрібен.");
+        setNetStatus(true, "Компас (якщо підтримується)");
+      }
+    }catch(e){
+      log("❌ Не вдалося запросити компас: " + e);
+      setNetStatus(false, "Компас недоступний");
+    }
+  }
+
+  // -------------------------
+  // Scanning loop
+  // -------------------------
+  function lastPoint(){
+    return points.length ? points[points.length-1] : null;
+  }
+
+  function canAddPoint(pos){
+    const lp = lastPoint();
+    if (!lp) return true;
+    const dist = distanceMeters({lat:lp.lat, lon:lp.lon},{lat:pos.lat, lon:pos.lon});
+    return dist >= SETTINGS.minMoveMeters;
+  }
+
+  async function doScanOnce(){
+    if (!currentPos) {
+      log("⏳ Чекаю GPS…");
+      return;
+    }
+    if (!canAddPoint(currentPos)) {
+      log("…майже не зрушив — пропуск точки");
+      return;
+    }
+
+    setNetStatus(true, "Тестую…");
+    const ping = await testPing();
+    const down = await testDownloadMbps();
+
+    const ok = isFinite(down) || isFinite(ping);
+    if (!ok){
+      setNetStatus(false, "Тест не вдався");
+      log("❌ Тест не вдався (слабкий інтернет/блок).");
+      return;
+    }
+
+    const downMbps = isFinite(down) ? down : 0;
+    const pingMs  = isFinite(ping) ? ping : 999;
+
+    const p = {
+      lat: currentPos.lat,
+      lon: currentPos.lon,
+      acc: currentPos.acc,
+      downMbps,
+      pingMs,
+      score: calcScore(downMbps, pingMs),
+      t: Date.now()
+    };
+
+    points.push(p);
+    if (points.length > SETTINGS.maxPoints) points = points.slice(-SETTINGS.maxPoints);
+
+    savePoints();
+    updateBest();
+    renderList();
+
+    setNetStatus(true, `OK: ${fmtMbps(downMbps)} · ${fmtMs(pingMs)}`);
+    log(`✅ Точка: ${fmtMbps(downMbps)} | ping ${fmtMs(pingMs)} | score ${p.score.toFixed(1)}`);
+  }
+
+  function startScan(){
+    if (scanning) return;
+    scanning = true;
+    btnStart.disabled = true;
+    btnStop.disabled = false;
+    setNetStatus(true, "Сканую…");
+    log("▶️ Start Scan");
+
+    // одразу раз
+    doScanOnce();
+
+    timerId = setInterval(doScanOnce, SETTINGS.scanIntervalMs);
+  }
+
+  function stopScan(){
+    if (!scanning) return;
+    scanning = false;
+    btnStart.disabled = false;
+    btnStop.disabled = true;
+    setNetStatus(true, "Зупинено");
+    log("⏹ Stop");
+    if (timerId){
+      clearInterval(timerId);
+      timerId = null;
+    }
+  }
+
+  function clearAll(){
+    points = [];
+    savePoints();
+    updateBest();
+    renderList();
+    log("🗑 Очищено точки");
+  }
+
+  // -------------------------
+  // Init
+  // -------------------------
+  function init(){
+    attachOrientation();
+    startGeo();
+    updateBest();
+    renderList();
+    setNetStatus(true, "Готово (дай доступи)");
+    log("Готово. Натисни 'Дозволити компас' і 'Start Scan'.");
+  }
+
+  btnStart.addEventListener("click", startScan);
+  btnStop.addEventListener("click", stopScan);
+  btnCompass.addEventListener("click", requestCompassPermission);
+  btnClear.addEventListener("click", clearAll);
+
+  window.addEventListener("visibilitychange", () => {
+    // якщо згорнув — зупинимо скан щоб не палити трафік
+    if (document.hidden && scanning) stopScan();
+  });
+
+  init();
+})();
+</script>
+</body>
+</html>
