@@ -1,620 +1,848 @@
-<!-- rebuild -->
 <!doctype html>
 <html lang="uk">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>Internet Locator</title>
+  <meta name="theme-color" content="#000000" />
+  <title>Internet Locator (AMOLED)</title>
+
   <style>
     :root{
-      --bg:#0b1220; --card:#111b2f; --muted:#9fb1d1; --text:#eaf2ff;
-      --accent:#4dd4ff; --accent2:#7c5cff; --bad:#ff5577; --ok:#35ff9a;
-      --border: rgba(255,255,255,.08);
+      --bg:#000;
+      --bg2:#050507;
+      --card:#0b0b10;
+      --card2:#0f0f18;
+      --text:#e9e9ef;
+      --muted:#9aa0aa;
+      --line:#1f2230;
+      --accent:#6be3ff;
+      --good:#43ff8f;
+      --warn:#ffd166;
+      --bad:#ff4d6d;
+      --shadow: 0 10px 25px rgba(0,0,0,.55);
+      --r:18px;
     }
     *{box-sizing:border-box}
+    html,body{height:100%;}
     body{
-      margin:0; font-family: -apple-system, system-ui, Segoe UI, Roboto, Arial;
-      background: radial-gradient(1200px 800px at 50% -10%, rgba(77,212,255,.16), transparent 60%),
-                  radial-gradient(900px 700px at 80% 20%, rgba(124,92,255,.14), transparent 55%),
-                  var(--bg);
+      margin:0;
+      background:
+        radial-gradient(1200px 600px at 50% -10%, rgba(107,227,255,.12), transparent 55%),
+        radial-gradient(800px 600px at 90% 10%, rgba(67,255,143,.08), transparent 50%),
+        radial-gradient(900px 700px at 10% 20%, rgba(255,77,109,.08), transparent 55%),
+        linear-gradient(var(--bg), var(--bg2));
       color:var(--text);
-      padding: 18px 14px 22px;
+      font: 15px/1.35 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,Arial,sans-serif;
+      -webkit-font-smoothing:antialiased;
+      padding: env(safe-area-inset-top) 14px env(safe-area-inset-bottom) 14px;
     }
-    h1{margin:0 0 10px; font-size:18px; font-weight:700; letter-spacing:.2px}
-    .wrap{max-width:560px; margin:0 auto}
-    .row{display:flex; gap:10px; flex-wrap:wrap}
-    .card{
-      background: linear-gradient(180deg, rgba(255,255,255,.04), transparent 70%), var(--card);
-      border:1px solid var(--border);
-      border-radius:16px;
-      padding:14px;
-      box-shadow: 0 10px 30px rgba(0,0,0,.25);
-    }
-    .grow{flex:1 1 260px}
-    .btn{
-      appearance:none; border:1px solid var(--border); background: rgba(255,255,255,.06);
-      color:var(--text); padding:12px 14px; border-radius:14px;
-      font-weight:650; letter-spacing:.2px; cursor:pointer;
-      display:inline-flex; align-items:center; gap:8px;
-    }
-    .btn.primary{ background: linear-gradient(135deg, rgba(77,212,255,.25), rgba(124,92,255,.22)); border-color: rgba(77,212,255,.25); }
-    .btn.danger{ background: rgba(255,85,119,.14); border-color: rgba(255,85,119,.22); }
-    .btn:disabled{opacity:.5; cursor:not-allowed}
+    .wrap{max-width:980px;margin:0 auto;display:grid;gap:12px;}
+    .top{display:flex; align-items:center; justify-content:space-between; gap:10px; padding:10px 6px 0 6px;}
+    .brand{display:flex; flex-direction:column; gap:2px;}
+    .brand b{font-size:18px; letter-spacing:.2px}
+    .brand small{color:var(--muted)}
     .pill{
+      display:flex; gap:8px; align-items:center;
+      padding:9px 12px; border:1px solid var(--line);
+      background:rgba(255,255,255,.02);
+      border-radius:999px;
+      box-shadow: var(--shadow);
+      color:var(--muted);
+      user-select:none;
+    }
+    .dot{width:8px;height:8px;border-radius:50%;background:var(--warn);box-shadow:0 0 0 4px rgba(255,209,102,.12);}
+    .dot.ok{background:var(--good); box-shadow:0 0 0 4px rgba(67,255,143,.12);}
+    .dot.bad{background:var(--bad); box-shadow:0 0 0 4px rgba(255,77,109,.12);}
+    .grid{display:grid;grid-template-columns:1.15fr .85fr;gap:12px;}
+    @media (max-width:920px){ .grid{grid-template-columns:1fr;} }
+
+    .card{
+      border:1px solid var(--line);
+      background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01));
+      border-radius:var(--r);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .card .hd{
+      display:flex; align-items:center; justify-content:space-between;
+      padding:12px 14px;
+      border-bottom:1px solid var(--line);
+      background:linear-gradient(180deg, rgba(15,15,24,.85), rgba(10,10,16,.45));
+    }
+    .card .hd h2{margin:0; font-size:14px; letter-spacing:.3px; color:var(--muted); font-weight:700; text-transform:uppercase;}
+    .card .bd{padding:14px;}
+    .row{display:flex; gap:10px; flex-wrap:wrap;}
+    .btn{
+      appearance:none; border:1px solid var(--line);
+      background:rgba(255,255,255,.03);
+      color:var(--text);
+      padding:11px 12px;
+      border-radius:14px;
       display:inline-flex; align-items:center; gap:8px;
-      padding:8px 10px; border-radius:999px;
-      border:1px solid var(--border);
-      color:var(--muted); background: rgba(255,255,255,.04);
-      font-size:12.5px;
+      cursor:pointer;
+      user-select:none;
+      transition: transform .06s ease, border-color .2s ease, background .2s ease;
     }
-    .grid{
-      display:grid; grid-template-columns: 1fr 1fr; gap:10px;
+    .btn:active{transform: scale(.985);}
+    .btn.primary{border-color: rgba(107,227,255,.35); background: rgba(107,227,255,.08);}
+    .btn.good{border-color: rgba(67,255,143,.35); background: rgba(67,255,143,.08);}
+    .btn.bad{border-color: rgba(255,77,109,.35); background: rgba(255,77,109,.08);}
+    .btn.ghost{background:transparent;}
+    .btn:disabled{opacity:.45; cursor:not-allowed;}
+    .kbd{
+      font: 12px/1.2 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
+      color:var(--muted);
+      border:1px solid var(--line);
+      border-bottom-color:#0c0c14;
+      padding:2px 8px;
+      border-radius:999px;
+      background:rgba(255,255,255,.02);
     }
-    .kv{
-      border:1px solid var(--border); border-radius:14px; padding:10px;
-      background: rgba(255,255,255,.03);
+
+    .stats{display:grid;grid-template-columns: repeat(3, 1fr);gap:10px;margin-top:12px;}
+    @media (max-width:520px){ .stats{grid-template-columns:1fr;} }
+    .stat{border:1px solid var(--line);background:linear-gradient(180deg, rgba(15,15,24,.6), rgba(8,8,12,.35));border-radius:16px;padding:10px 12px;}
+    .stat .k{color:var(--muted); font-size:12px;}
+    .stat .v{font-size:18px; font-weight:800; margin-top:4px;}
+    .stat .s{color:var(--muted); font-size:12px; margin-top:2px;}
+
+    .compassWrap{display:grid; grid-template-columns: 1fr 1fr; gap:12px;align-items:stretch;}
+    @media (max-width:520px){ .compassWrap{grid-template-columns:1fr;} }
+    .compass{
+      border:1px solid var(--line);
+      background:radial-gradient(240px 240px at 50% 35%, rgba(107,227,255,.10), rgba(0,0,0,.0) 60%),
+                 linear-gradient(180deg, rgba(15,15,24,.55), rgba(8,8,12,.35));
+      border-radius:16px;
+      padding:12px;
+      position:relative;
+      overflow:hidden;
+      min-height:220px;
+      display:flex; flex-direction:column;
+      justify-content:space-between;
     }
-    .k{font-size:12px; color:var(--muted)}
-    .v{font-size:15px; font-weight:700; margin-top:4px}
-    .muted{color:var(--muted)}
-    .small{font-size:12px}
-    .sep{height:1px; background: var(--border); margin:12px 0}
-    .arrowBox{
-      display:flex; align-items:center; justify-content:center;
-      padding: 18px 0 6px;
+    .dial{
+      position:relative;width:170px;height:170px;margin:6px auto 2px auto;border-radius:50%;
+      border:1px solid rgba(255,255,255,.08);
+      background:
+        radial-gradient(circle at 50% 50%, rgba(255,255,255,.05), transparent 60%),
+        conic-gradient(from 0deg, rgba(107,227,255,.25), rgba(67,255,143,.08), rgba(255,77,109,.10), rgba(107,227,255,.25));
+      box-shadow: inset 0 0 0 10px rgba(0,0,0,.35), 0 14px 24px rgba(0,0,0,.55);
     }
-    .arrowRing{
-      width: 170px; height:170px; border-radius: 50%;
-      border: 1px solid var(--border);
-      background: radial-gradient(circle at 50% 35%, rgba(77,212,255,.12), rgba(255,255,255,.02) 65%);
-      position: relative;
-      box-shadow: inset 0 0 0 6px rgba(255,255,255,.02);
+    .needle{
+      position:absolute;left:50%; top:50%;
+      width:4px; height:72px;
+      transform-origin: 50% 92%;
+      transform: translate(-50%,-92%) rotate(0deg);
+      background: linear-gradient(180deg, var(--accent), rgba(107,227,255,.0));
+      border-radius:999px;
+      filter: drop-shadow(0 6px 10px rgba(107,227,255,.35));
     }
-    .arrowNeedle{
-      position:absolute; left:50%; top:50%;
-      width: 0; height: 0;
-      border-left: 16px solid transparent;
-      border-right: 16px solid transparent;
-      border-bottom: 62px solid var(--accent);
-      transform: translate(-50%, -72px) rotate(0deg);
-      transform-origin: 50% 72px;
-      filter: drop-shadow(0 10px 18px rgba(77,212,255,.25));
+    .needle::after{
+      content:"";
+      position:absolute;left:50%; top:-10px;transform:translateX(-50%);
+      width:14px;height:14px;border-radius:50%;
+      background: rgba(107,227,255,.22);
+      border:1px solid rgba(107,227,255,.35);
+      box-shadow:0 0 0 6px rgba(107,227,255,.10);
     }
-    .north{
-      position:absolute; left:50%; top:8px; transform:translateX(-50%);
-      font-size:12px; color:var(--muted);
-      letter-spacing:.8px;
+    .dialLabel{text-align:center;color:var(--muted);margin-top:6px;font-size:12px;}
+    .big{font-size:22px; font-weight:900;letter-spacing:.2px;}
+    .sub{color:var(--muted);font-size:12px;margin-top:2px;}
+
+    .list{border:1px solid var(--line);border-radius:16px;overflow:hidden;background:linear-gradient(180deg, rgba(15,15,24,.6), rgba(8,8,12,.35));}
+    .listHead{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:10px 12px;border-bottom:1px solid var(--line);color:var(--muted);font-size:12px;}
+    .items{max-height:320px; overflow:auto;}
+    .item{padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.06);display:flex;justify-content:space-between;gap:10px;align-items:flex-start;}
+    .item:last-child{border-bottom:none;}
+    .badge{
+      font-weight:800;padding:4px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.10);
+      color:var(--text);background:rgba(255,255,255,.03);white-space:nowrap;
     }
-    .statusDot{
-      width:10px; height:10px; border-radius:50%;
-      background: rgba(255,255,255,.25);
+    .badge.good{border-color: rgba(67,255,143,.35); background: rgba(67,255,143,.08);}
+    .badge.warn{border-color: rgba(255,209,102,.35); background: rgba(255,209,102,.08);}
+    .badge.bad{border-color: rgba(255,77,109,.35); background: rgba(255,77,109,.08);}
+    .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;}
+    .log{
+      height:190px; overflow:auto;border:1px solid var(--line);background:rgba(0,0,0,.35);
+      border-radius:16px;padding:10px;color:#cfd3dd;font-size:12px;line-height:1.35;
     }
-    .dotOk{background: var(--ok)}
-    .dotBad{background: var(--bad)}
-    textarea{
-      width:100%; min-height:88px; resize:vertical;
-      background: rgba(0,0,0,.18); color: var(--text);
-      border:1px solid var(--border); border-radius:14px;
-      padding:10px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-      font-size:12px;
-    }
-    .list{
-      max-height: 220px; overflow:auto; padding-right:4px;
-    }
-    .item{
-      padding:10px; border:1px solid var(--border); border-radius:14px;
-      background: rgba(255,255,255,.03);
-      display:flex; justify-content:space-between; gap:10px;
-      margin-bottom:8px;
-    }
-    .item b{font-size:13px}
-    .tag{
-      font-size:12px; padding:6px 10px; border-radius:999px;
-      border:1px solid var(--border);
-      background: rgba(255,255,255,.04);
-      white-space:nowrap;
-    }
+    .hint{color:var(--muted);font-size:12px;margin-top:10px;}
+    .sep{height:10px;}
+    .footer{color:var(--muted);text-align:center;font-size:12px;padding:10px 0 4px 0;}
+    a{color:var(--accent); text-decoration:none}
+    a:hover{text-decoration:underline}
   </style>
 </head>
+
 <body>
   <div class="wrap">
-    <h1>📡 Internet Locator (сканер “де краще тягне”)</h1>
+    <div class="top">
+      <div class="brand">
+        <b>Internet Locator</b>
+        <small>AMOLED • Smart scan • “Йди туди, де краще тягне”</small>
+      </div>
+      <div class="pill" id="statusPill">
+        <span class="dot" id="statusDot"></span>
+        <span id="statusText">Готовий</span>
+      </div>
+    </div>
 
-    <div class="row">
-      <div class="card grow">
-        <div class="row" style="align-items:center; justify-content:space-between">
-          <span class="pill"><span id="netDot" class="statusDot"></span><span id="netText">Готово</span></span>
-          <span class="pill">Точки: <b id="pointsCount">0</b></span>
+    <div class="grid">
+      <div class="card">
+        <div class="hd">
+          <h2>Керування</h2>
+          <div class="mono" style="color:var(--muted);font-size:12px;">v3 AMOLED</div>
         </div>
-
-        <div class="arrowBox">
-          <div class="arrowRing">
-            <div class="north">N</div>
-            <div id="needle" class="arrowNeedle"></div>
+        <div class="bd">
+          <div class="row">
+            <button class="btn primary" id="btnCompass">🧭 Дозволити компас</button>
+            <button class="btn good" id="btnStart">▶️ Start Scan</button>
+            <button class="btn bad" id="btnStop" disabled>⏹ Stop</button>
+            <button class="btn ghost" id="btnFix">🛠 Fix GPS/Permissions</button>
           </div>
-        </div>
 
-        <div class="grid">
-          <div class="kv">
-            <div class="k">Відстань до кращої точки</div>
-            <div class="v" id="bestDist">—</div>
+          <div class="stats">
+            <div class="stat">
+              <div class="k">GPS</div>
+              <div class="v" id="gpsState">—</div>
+              <div class="s" id="gpsAcc">Точність: —</div>
+            </div>
+            <div class="stat">
+              <div class="k">Інтернет (score)</div>
+              <div class="v" id="scoreNow">—</div>
+              <div class="s" id="netNow">ping: — • down: —</div>
+            </div>
+            <div class="stat">
+              <div class="k">Краща точка</div>
+              <div class="v" id="bestScore">—</div>
+              <div class="s" id="bestMeta">відстань: —</div>
+            </div>
           </div>
-          <div class="kv">
-            <div class="k">Напрямок (азимут)</div>
-            <div class="v" id="bestBear">—</div>
+
+          <div class="sep"></div>
+
+          <div class="compassWrap">
+            <div class="compass">
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
+                <div>
+                  <div class="big" id="headingTxt">—°</div>
+                  <div class="sub">Напрямок телефону (згладжено)</div>
+                </div>
+                <div class="kbd" id="compassState">компас: —</div>
+              </div>
+
+              <div class="dial">
+                <div class="needle" id="needle"></div>
+              </div>
+              <div class="dialLabel" id="arrowTxt">Стрілка покаже напрямок на найкращу точку</div>
+            </div>
+
+            <div class="list">
+              <div class="listHead">
+                <span>Точки скану</span>
+                <span class="mono" id="pointsCount">0</span>
+              </div>
+              <div class="items" id="pointsList"></div>
+            </div>
           </div>
-          <div class="kv">
-            <div class="k">Найкраща швидкість</div>
-            <div class="v" id="bestSpeed">—</div>
+
+          <div class="sep"></div>
+
+          <div class="row">
+            <button class="btn" id="btnExport">⬇️ Export JSON</button>
+            <button class="btn" id="btnImport">⬆️ Import JSON</button>
+            <button class="btn" id="btnClear">🗑 Clear</button>
           </div>
-          <div class="kv">
-            <div class="k">Пінг</div>
-            <div class="v" id="bestPing">—</div>
+
+          <div class="hint">
+            iPhone: відкривай у Safari та дозволяй <b>Розташування</b> “Під час використання”.
+            Компас просить дозвіл кнопкою.
           </div>
-        </div>
-
-        <div class="sep"></div>
-
-        <div class="row">
-          <button class="btn primary" id="btnStart">▶️ Start Scan</button>
-          <button class="btn danger" id="btnStop" disabled>⏹ Stop</button>
-          <button class="btn" id="btnCompass">🧭 Дозволити компас</button>
-          <button class="btn" id="btnClear">🗑 Очистити точки</button>
-        </div>
-
-        <div class="sep"></div>
-
-        <div class="small muted">
-          Працює так: ти ходиш — воно робить маленькі тести (пінг + даунлоад), прив’язує результат до GPS-точки,
-          вибирає “best spot” і веде стрілкою.
         </div>
       </div>
 
-      <div class="card grow">
-        <div class="k">Логи</div>
-        <textarea id="log" readonly></textarea>
-
-        <div class="sep"></div>
-
-        <div class="k">Останні точки</div>
-        <div class="list" id="list"></div>
+      <div class="card">
+        <div class="hd">
+          <h2>Лог і діагностика</h2>
+          <div class="kbd" id="scanState">scan: idle</div>
+        </div>
+        <div class="bd">
+          <div class="log mono" id="log"></div>
+          <div class="sep"></div>
+          <div class="hint">
+            <b>Score</b> = latency + stability + маленький download. На слабкому інтернеті тест автоматично “полегшується”.
+          </div>
+          <div class="footer">
+            Порада: рухайся по кімнаті/двору повільно — система сама запам’ятає найкращі точки.
+          </div>
+        </div>
       </div>
     </div>
   </div>
 
 <script>
 (() => {
-  // -------------------------
-  // Settings (можеш міняти)
-  // -------------------------
-  const SETTINGS = {
-    scanIntervalMs: 5500,          // як часто робити тест
-    minMoveMeters: 5,              // не писати точку, якщо ти майже не зрушив
-    downloadBytes: 450000,         // розмір тесту (байти). Менше = легше для слабкого інтернету
-    maxPoints: 80,                 // ліміт збережених точок
+  const $ = (id) => document.getElementById(id);
+  const now = () => new Date().toTimeString().slice(0,8);
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const rad = (d) => d * Math.PI / 180;
+  const deg = (r) => r * 180 / Math.PI;
+
+  function haversine(a, b){
+    const R = 6371000;
+    const dLat = rad(b.lat - a.lat);
+    const dLon = rad(b.lon - a.lon);
+    const s1 = Math.sin(dLat/2), s2 = Math.sin(dLon/2);
+    const q = s1*s1 + Math.cos(rad(a.lat))*Math.cos(rad(b.lat))*s2*s2;
+    return 2 * R * Math.asin(Math.sqrt(q));
+  }
+  function bearing(from, to){
+    const φ1 = rad(from.lat), φ2 = rad(to.lat);
+    const λ1 = rad(from.lon), λ2 = rad(to.lon);
+    const y = Math.sin(λ2-λ1)*Math.cos(φ2);
+    const x = Math.cos(φ1)*Math.sin(φ2) - Math.sin(φ1)*Math.cos(φ2)*Math.cos(λ2-λ1);
+    return (deg(Math.atan2(y, x)) + 360) % 360;
+  }
+
+  const statusDot = $("statusDot");
+  const statusText = $("statusText");
+  const gpsState = $("gpsState");
+  const gpsAcc = $("gpsAcc");
+  const scoreNow = $("scoreNow");
+  const netNow = $("netNow");
+  const bestScore = $("bestScore");
+  const bestMeta = $("bestMeta");
+  const pointsCount = $("pointsCount");
+  const pointsList = $("pointsList");
+  const headingTxt = $("headingTxt");
+  const needle = $("needle");
+  const arrowTxt = $("arrowTxt");
+  const logEl = $("log");
+  const compassState = $("compassState");
+  const scanState = $("scanState");
+
+  const btnCompass = $("btnCompass");
+  const btnStart = $("btnStart");
+  const btnStop = $("btnStop");
+  const btnFix = $("btnFix");
+  const btnExport = $("btnExport");
+  const btnImport = $("btnImport");
+  const btnClear = $("btnClear");
+
+  function log(msg){
+    const line = `[${now()}] ${msg}`;
+    const div = document.createElement("div");
+    div.textContent = line;
+    logEl.appendChild(div);
+    logEl.scrollTop = logEl.scrollHeight;
+  }
+  function setStatus(kind, text){
+    statusDot.classList.remove("ok","bad");
+    if(kind==="ok") statusDot.classList.add("ok");
+    else if(kind==="bad") statusDot.classList.add("bad");
+    statusText.textContent = text;
+  }
+
+  const LS_KEY = "internet_locator_points_v3";
+  let points = [];
+  let scanning = false;
+
+  let pos = null;
+  let accMeters = 9999;
+  let watchId = null;
+
+  let compassAllowed = false;
+  let headingSmooth = null;
+  let lastNeedleDeg = 0;
+
+  let best = null;
+  let loopTimer = null;
+
+  let lastSampleAt = 0;
+  let lastSamplePos = null;
+  let weakMode = false; // auto based on ping/down
+
+  const CFG = {
+    minAccMeters: 55,
+    sampleEveryMs: 3500,
+    sampleMinMove: 9,
+    maxPoints: 120,
+
+    pingTries: 3,
+    pingTimeoutMs: 1400,
+    dlTimeoutMs: 2400,
+    dlBytesStrong: 220*1024,
+    dlBytesWeak: 80*1024,
+
+    pingUrls: [
+      "https://www.cloudflare.com/cdn-cgi/trace",
+      "https://www.google.com/generate_204"
+    ],
+    dlUrl: "https://cdn.jsdelivr.net/gh/jquery/jquery@3.7.1/dist/jquery.min.js"
   };
 
-  // -------------------------
-  // State
-  // -------------------------
-  let scanning = false;
-  let watchId = null;
-  let timerId = null;
-
-  let currentPos = null;           // {lat, lon, acc}
-  let headingDeg = null;           // 0..360
-  let bestPoint = null;            // {lat, lon, score, downMbps, pingMs, t}
-
-  const LS_KEY = "internet_locator_points_v1";
-  let points = loadPoints();
-
-  // -------------------------
-  // UI refs
-  // -------------------------
-  const el = (id) => document.getElementById(id);
-  const logEl = el("log");
-  const needle = el("needle");
-
-  const netDot = el("netDot");
-  const netText = el("netText");
-  const pointsCount = el("pointsCount");
-
-  const bestDist = el("bestDist");
-  const bestBear = el("bestBear");
-  const bestSpeed = el("bestSpeed");
-  const bestPing = el("bestPing");
-
-  const btnStart = el("btnStart");
-  const btnStop = el("btnStop");
-  const btnCompass = el("btnCompass");
-  const btnClear = el("btnClear");
-  const listEl = el("list");
-
-  // -------------------------
-  // Helpers
-  // -------------------------
-  function log(msg){
-    const t = new Date().toLocaleTimeString();
-    logEl.value = `[${t}] ${msg}\n` + logEl.value;
+  function save(){
+    try{ localStorage.setItem(LS_KEY, JSON.stringify(points)); } catch(e){}
   }
-  function clamp360(x){
-    x = x % 360;
-    if (x < 0) x += 360;
-    return x;
-  }
-  function toRad(d){ return d * Math.PI / 180; }
-  function toDeg(r){ return r * 180 / Math.PI; }
-
-  // Haversine distance (m)
-  function distanceMeters(a, b){
-    const R = 6371000;
-    const dLat = toRad(b.lat - a.lat);
-    const dLon = toRad(b.lon - a.lon);
-    const lat1 = toRad(a.lat);
-    const lat2 = toRad(b.lat);
-    const s = Math.sin(dLat/2)**2 + Math.cos(lat1)*Math.cos(lat2)*Math.sin(dLon/2)**2;
-    return 2 * R * Math.asin(Math.min(1, Math.sqrt(s)));
-  }
-
-  // Bearing from a -> b (deg, 0=N)
-  function bearingDeg(a, b){
-    const lat1 = toRad(a.lat), lat2 = toRad(b.lat);
-    const dLon = toRad(b.lon - a.lon);
-    const y = Math.sin(dLon) * Math.cos(lat2);
-    const x = Math.cos(lat1)*Math.sin(lat2) - Math.sin(lat1)*Math.cos(lat2)*Math.cos(dLon);
-    return clamp360(toDeg(Math.atan2(y, x)));
-  }
-
-  function fmtM(m){
-    if (!isFinite(m)) return "—";
-    if (m < 1000) return `${Math.round(m)} м`;
-    return `${(m/1000).toFixed(2)} км`;
-  }
-  function fmtDeg(d){
-    if (!isFinite(d)) return "—";
-    return `${Math.round(d)}°`;
-  }
-  function fmtMbps(x){
-    if (!isFinite(x)) return "—";
-    if (x < 1) return `${x.toFixed(2)} Mbps`;
-    return `${x.toFixed(1)} Mbps`;
-  }
-  function fmtMs(x){
-    if (!isFinite(x)) return "—";
-    return `${Math.round(x)} ms`;
-  }
-
-  function setNetStatus(ok, text){
-    netDot.className = "statusDot " + (ok ? "dotOk" : "dotBad");
-    netText.textContent = text;
-  }
-
-  function savePoints(){
-    try{
-      localStorage.setItem(LS_KEY, JSON.stringify(points.slice(-SETTINGS.maxPoints)));
-    }catch(e){}
-  }
-  function loadPoints(){
+  function load(){
     try{
       const raw = localStorage.getItem(LS_KEY);
-      if (!raw) return [];
-      const arr = JSON.parse(raw);
-      if (!Array.isArray(arr)) return [];
-      return arr.filter(p => p && typeof p.lat==="number" && typeof p.lon==="number");
-    }catch(e){
-      return [];
-    }
+      points = raw ? JSON.parse(raw) : [];
+      if(!Array.isArray(points)) points = [];
+    }catch(e){ points = []; }
   }
 
-  // score: більше краще
-  // робимо простий баланс: швидкість важлива, пінг теж (але менше)
-  function calcScore(downMbps, pingMs){
-    const s = (downMbps || 0) * 1.0 + (pingMs ? (1200 / (pingMs + 60)) : 0);
-    return s;
+  function scoreClass(score){
+    if(score>=75) return "good";
+    if(score>=45) return "warn";
+    return "bad";
   }
 
-  function updateBest(){
-    if (!points.length){
-      bestPoint = null;
-      bestDist.textContent = "—";
-      bestBear.textContent = "—";
-      bestSpeed.textContent = "—";
-      bestPing.textContent = "—";
-      updateNeedle();
-      return;
-    }
-    // best by score
-    bestPoint = points.reduce((a,b)=> (b.score > a.score ? b : a), points[0]);
-    bestSpeed.textContent = fmtMbps(bestPoint.downMbps);
-    bestPing.textContent = fmtMs(bestPoint.pingMs);
-    updateNeedle();
-  }
-
-  function updateNeedle(){
-    if (!currentPos || !bestPoint){
-      needle.style.transform = `translate(-50%, -72px) rotate(0deg)`;
-      bestDist.textContent = "—";
-      bestBear.textContent = "—";
-      return;
-    }
-    const a = {lat: currentPos.lat, lon: currentPos.lon};
-    const b = {lat: bestPoint.lat, lon: bestPoint.lon};
-    const dist = distanceMeters(a,b);
-    const bear = bearingDeg(a,b);
-
-    bestDist.textContent = fmtM(dist);
-    bestBear.textContent = fmtDeg(bear);
-
-    const hdg = (headingDeg == null) ? 0 : headingDeg;
-    const rel = clamp360(bear - hdg); // куди крутити відносно того, куди дивиться телефон
-    needle.style.transform = `translate(-50%, -72px) rotate(${rel}deg)`;
-  }
-
-  function renderList(){
+  function renderPoints(){
     pointsCount.textContent = String(points.length);
-    listEl.innerHTML = "";
-    const last = points.slice(-12).reverse();
-    for (const p of last){
-      const div = document.createElement("div");
-      div.className = "item";
+    pointsList.innerHTML = "";
+
+    const sorted = [...points].sort((a,b)=>b.score-a.score).slice(0, 30);
+    for(const p of sorted){
+      const it = document.createElement("div");
+      it.className = "item";
       const left = document.createElement("div");
-      left.innerHTML = `<b>${fmtMbps(p.downMbps)}</b><div class="small muted">ping ${fmtMs(p.pingMs)} · acc ${Math.round(p.acc||0)}м</div>`;
-      const right = document.createElement("div");
-      const isBest = bestPoint && p.t === bestPoint.t;
-      right.innerHTML = `<span class="tag" style="${isBest ? "border-color: rgba(53,255,154,.35); background: rgba(53,255,154,.12)" : ""}">${isBest ? "BEST" : "score " + p.score.toFixed(1)}</span>`;
-      div.appendChild(left);
-      div.appendChild(right);
-      listEl.appendChild(div);
+      left.innerHTML = `
+        <div style="font-weight:800">${p.score.toFixed(0)} <span class="mono" style="color:var(--muted);font-weight:600">score</span></div>
+        <div class="mono" style="color:var(--muted);font-size:12px;margin-top:2px;">
+          ping ${Math.round(p.ping)}ms • jit ${Math.round(p.jitter)}ms • down ${p.downMbps.toFixed(2)} Mbps
+        </div>
+        <div class="mono" style="color:var(--muted);font-size:12px;margin-top:2px;">
+          acc ±${Math.round(p.acc)}m • ${new Date(p.t).toLocaleTimeString().slice(0,5)}
+        </div>
+      `;
+      const badge = document.createElement("div");
+      badge.className = "badge " + scoreClass(p.score);
+      badge.textContent = (p.score>=75)?"TOP":(p.score>=45)?"OK":"LOW";
+      it.appendChild(left);
+      it.appendChild(badge);
+      pointsList.appendChild(it);
     }
   }
 
-  // -------------------------
-  // Internet tests
-  // -------------------------
-  async function testPing(){
-    // Беремо легкий endpoint, який майже завжди доступний
-    // no-cors щоб не паритись з CORS; нам потрібен тільки час
-    const url = "https://www.google.com/generate_204?cache=" + Math.random();
-    const t0 = performance.now();
-    try{
-      await fetch(url, {method:"GET", mode:"no-cors", cache:"no-store"});
-      return performance.now() - t0;
-    }catch(e){
-      return NaN;
+  function recomputeBest(){
+    if(!points.length){ best=null; bestScore.textContent="—"; bestMeta.textContent="відстань: —"; return; }
+    let bestP=null, bestVal=-1e9;
+    for(const p of points){
+      const stabPenalty = (p.jitter*0.6) + (p.fail?12:0) + (p.acc>CFG.minAccMeters?6:0);
+      const val = p.score - stabPenalty;
+      if(val>bestVal){ bestVal=val; bestP=p; }
     }
+    best = bestP;
+    bestScore.textContent = best.score.toFixed(0);
+    updateBestDistance();
+    updateArrow();
   }
 
-  async function testDownloadMbps(){
-    // Cloudflare speed endpoint (часто дає CORS на arrayBuffer)
-    const bytes = SETTINGS.downloadBytes;
-    const url = `https://speed.cloudflare.com/__down?bytes=${bytes}&cache=${Math.random()}`;
-    const t0 = performance.now();
-    try{
-      const r = await fetch(url, {cache:"no-store"});
-      const buf = await r.arrayBuffer();
-      const dt = (performance.now() - t0) / 1000;
-      const bits = (buf.byteLength || bytes) * 8;
-      const mbps = (bits / dt) / 1e6;
-      return mbps;
-    }catch(e){
-      // fallback через Image (інколи рятує)
-      return await testDownloadViaImage(bytes);
-    }
+  function updateBestDistance(){
+    if(!best || !pos){ bestMeta.textContent="відстань: —"; return; }
+    const d = haversine(pos, best);
+    bestMeta.textContent = `відстань: ${d<1000 ? Math.round(d)+' м' : (d/1000).toFixed(2)+' км'}`;
   }
 
-  function testDownloadViaImage(bytes){
-    return new Promise((resolve) => {
-      const url = `https://speed.cloudflare.com/__down?bytes=${bytes}&cache=${Math.random()}`;
-      const img = new Image();
-      const t0 = performance.now();
-      img.onload = () => {
-        const dt = (performance.now() - t0) / 1000;
-        const mbps = ((bytes*8) / dt) / 1e6;
-        resolve(mbps);
-      };
-      img.onerror = () => resolve(NaN);
-      img.src = url;
-    });
-  }
-
-  // -------------------------
-  // Position tracking
-  // -------------------------
-  function startGeo(){
-    if (!navigator.geolocation){
-      log("❌ Geolocation не підтримується.");
+  function updateArrow(){
+    if(headingSmooth == null){
+      needle.style.transform = `translate(-50%,-92%) rotate(${lastNeedleDeg}deg)`;
+      headingTxt.textContent = "—°";
+      arrowTxt.textContent = "Дай дозвіл компасу";
       return;
     }
+    headingTxt.textContent = `${Math.round(headingSmooth)}°`;
+
+    if(!best || !pos){
+      arrowTxt.textContent = "Стрілка покаже напрямок на найкращу точку";
+      return;
+    }
+
+    const brg = bearing(pos, best);
+    const rel = (brg - headingSmooth + 360) % 360;
+    lastNeedleDeg = rel;
+    needle.style.transform = `translate(-50%,-92%) rotate(${rel}deg)`;
+
+    const d = haversine(pos, best);
+    arrowTxt.textContent = `Йди ${Math.round(rel)}° → до кращої точки (${d<1000?Math.round(d)+" м":(d/1000).toFixed(2)+" км"})`;
+  }
+
+  async function requestCompass(){
+    try{
+      if(typeof DeviceOrientationEvent === "undefined"){
+        compassState.textContent = "компас: нема";
+        log("❌ Немає DeviceOrientationEvent.");
+        setStatus("bad","Нема компаса");
+        return;
+      }
+      if(typeof DeviceOrientationEvent.requestPermission === "function"){
+        const res = await DeviceOrientationEvent.requestPermission();
+        if(res !== "granted"){
+          compassAllowed = false;
+          compassState.textContent = "компас: denied";
+          log("❌ Компас не дозволено.");
+          setStatus("bad","Компас denied");
+          return;
+        }
+      }
+      compassAllowed = true;
+      compassState.textContent = "компас: ok";
+      log("✅ Компас дозволено.");
+      setStatus("ok","Компас OK");
+    }catch(e){
+      compassAllowed = false;
+      compassState.textContent = "компас: error";
+      log("❌ Compass error: " + (e?.message||e));
+      setStatus("bad","Компас error");
+    }
+  }
+
+  window.addEventListener("deviceorientation", (ev) => {
+    if(!compassAllowed) return;
+
+    let h = null;
+    if(typeof ev.webkitCompassHeading === "number"){
+      h = ev.webkitCompassHeading;
+    }else if(typeof ev.alpha === "number"){
+      h = (360 - ev.alpha) % 360;
+    }
+    if(h == null) return;
+
+    if(headingSmooth == null) headingSmooth = h;
+    else{
+      const a = 0.18;
+      let diff = ((h - headingSmooth + 540) % 360) - 180;
+      headingSmooth = (headingSmooth + diff * a + 360) % 360;
+    }
+    updateArrow();
+  }, {passive:true});
+
+  function startGPS(){
+    if(!("geolocation" in navigator)){
+      log("❌ Geolocation не підтримується.");
+      gpsState.textContent = "нема";
+      setStatus("bad","Нема GPS API");
+      return;
+    }
+    if(watchId != null) navigator.geolocation.clearWatch(watchId);
 
     watchId = navigator.geolocation.watchPosition(
-      (pos) => {
-        currentPos = {
-          lat: pos.coords.latitude,
-          lon: pos.coords.longitude,
-          acc: pos.coords.accuracy
-        };
-        updateNeedle();
+      (p) => {
+        pos = { lat: p.coords.latitude, lon: p.coords.longitude };
+        accMeters = p.coords.accuracy ?? 9999;
+
+        gpsAcc.textContent = `Точність: ±${Math.round(accMeters)} м`;
+        gpsState.textContent = (accMeters <= CFG.minAccMeters) ? "OK" : "слабко";
+
+        if(accMeters <= CFG.minAccMeters) setStatus("ok","GPS OK");
+        else setStatus("", "GPS слабкий");
+
+        updateBestDistance();
+        updateArrow();
       },
       (err) => {
-        log("❌ Geo error: " + (err && err.message ? err.message : "невідомо"));
-        setNetStatus(false, "Немає доступу до гео");
+        log(`❌ Geo error: ${err.message || err.code}`);
+        gpsState.textContent = "DENIED";
+        setStatus("bad","GPS denied");
       },
-      { enableHighAccuracy:true, maximumAge: 500, timeout: 12000 }
+      { enableHighAccuracy:true, maximumAge:1500, timeout:12000 }
     );
   }
 
-  function stopGeo(){
-    if (watchId != null){
-      navigator.geolocation.clearWatch(watchId);
-      watchId = null;
-    }
+  function randStr(n=10){
+    const a = "abcdefghijklmnopqrstuvwxyz0123456789";
+    let s=""; for(let i=0;i<n;i++) s+=a[(Math.random()*a.length)|0];
+    return s;
   }
-
-  // -------------------------
-  // Compass / orientation
-  // -------------------------
-  function attachOrientation(){
-    window.addEventListener("deviceorientation", (e) => {
-      // iOS Safari часто дає webkitCompassHeading (0..360)
-      if (typeof e.webkitCompassHeading === "number") {
-        headingDeg = clamp360(e.webkitCompassHeading);
-      } else if (typeof e.alpha === "number") {
-        // alpha — 0..360, але може бути “відносний”
-        headingDeg = clamp360(360 - e.alpha);
-      } else {
-        headingDeg = null;
-      }
-      updateNeedle();
-    }, true);
-
-    window.addEventListener("deviceorientationabsolute", (e) => {
-      if (typeof e.alpha === "number") {
-        headingDeg = clamp360(360 - e.alpha);
-        updateNeedle();
-      }
-    }, true);
-  }
-
-  async function requestCompassPermission(){
+  async function fetchWithTimeout(url, opts={}, ms=1200){
+    const ctrl = new AbortController();
+    const t = setTimeout(()=>ctrl.abort(), ms);
     try{
-      if (typeof DeviceOrientationEvent !== "undefined" &&
-          typeof DeviceOrientationEvent.requestPermission === "function") {
-        const res = await DeviceOrientationEvent.requestPermission();
-        if (res === "granted"){
-          log("✅ Компас дозволено.");
-          setNetStatus(true, "Компас активний");
-        } else {
-          log("❌ Компас заборонено.");
-          setNetStatus(false, "Компас недоступний");
-        }
-      } else {
-        // Android / старі браузери
-        log("ℹ️ Додатковий дозвіл компаса не потрібен.");
-        setNetStatus(true, "Компас (якщо підтримується)");
+      return await fetch(url, { ...opts, signal: ctrl.signal, cache:"no-store" });
+    } finally { clearTimeout(t); }
+  }
+
+  async function measurePing(){
+    const samples = [];
+    let fails = 0;
+
+    for(let i=0;i<CFG.pingTries;i++){
+      const base = CFG.pingUrls[i % CFG.pingUrls.length];
+      const url = base + (base.includes("?") ? "&" : "?") + "r=" + randStr(8);
+      const t0 = performance.now();
+      try{
+        await fetchWithTimeout(url, { method:"GET", mode:"cors" }, CFG.pingTimeoutMs);
+        const t1 = performance.now();
+        samples.push(t1 - t0);
+      }catch(e){ fails++; }
+    }
+
+    if(!samples.length) return { ping: 999, jitter: 250, fail:true };
+    samples.sort((a,b)=>a-b);
+    const ping = samples[Math.floor(samples.length/2)];
+    let jitter = 0;
+    for(let i=1;i<samples.length;i++) jitter += Math.abs(samples[i]-samples[i-1]);
+    jitter = (samples.length>1) ? (jitter/(samples.length-1)) : 0;
+    return { ping, jitter, fail: fails>0 };
+  }
+
+  async function measureDownload(isWeak){
+    const bytes = isWeak ? CFG.dlBytesWeak : CFG.dlBytesStrong;
+    const url = CFG.dlUrl + "?r=" + randStr(6);
+    const t0 = performance.now();
+    let got = 0;
+    try{
+      const r = await fetchWithTimeout(url, { method:"GET", mode:"cors" }, CFG.dlTimeoutMs);
+      const reader = r.body?.getReader?.();
+      if(!reader) throw new Error("no stream");
+      while(true){
+        const {done, value} = await reader.read();
+        if(done) break;
+        got += value.byteLength;
+        if(got >= bytes) break;
       }
     }catch(e){
-      log("❌ Не вдалося запросити компас: " + e);
-      setNetStatus(false, "Компас недоступний");
+      return { downMbps: 0, dlMs: CFG.dlTimeoutMs, fail:true };
     }
+    const t1 = performance.now();
+    const ms = Math.max(1, t1 - t0);
+    const mbps = (got * 8) / (ms/1000) / 1e6;
+    return { downMbps: mbps, dlMs: ms, fail:false };
   }
 
-  // -------------------------
-  // Scanning loop
-  // -------------------------
-  function lastPoint(){
-    return points.length ? points[points.length-1] : null;
+  function computeScore(ping, jitter, downMbps, anyFail){
+    const pingScore = clamp(100 - (ping * 0.22), 0, 100);
+    const jitScore  = clamp(100 - (jitter * 0.65), 0, 100);
+    const downScore = clamp(Math.log2(1 + downMbps) * 20, 0, 100);
+    let score = pingScore * 0.55 + jitScore * 0.25 + downScore * 0.20;
+    if(anyFail) score -= 8;
+    return clamp(score, 0, 100);
   }
 
-  function canAddPoint(pos){
-    const lp = lastPoint();
-    if (!lp) return true;
-    const dist = distanceMeters({lat:lp.lat, lon:lp.lon},{lat:pos.lat, lon:pos.lon});
-    return dist >= SETTINGS.minMoveMeters;
+  function shouldSample(){
+    const t = Date.now();
+    if(!pos) return false;
+
+    if(t - lastSampleAt < CFG.sampleEveryMs) {
+      if(!lastSamplePos) return false;
+      const d = haversine(pos, lastSamplePos);
+      return d >= CFG.sampleMinMove;
+    }
+    return true;
   }
 
-  async function doScanOnce(){
-    if (!currentPos) {
+  function pushPoint(p){
+    points.push(p);
+    if(points.length > CFG.maxPoints){
+      // keep best points + some newest
+      points.sort((a,b)=>b.score-a.score);
+      const bestKeep = points.slice(0, 80);
+      const newest = points.slice(-20);
+      const merged = [...bestKeep, ...newest];
+      // unique by time+coords
+      const m = new Map();
+      for(const x of merged){
+        const k = `${Math.round(x.lat*1e6)}:${Math.round(x.lon*1e6)}:${x.t}`;
+        if(!m.has(k)) m.set(k, x);
+      }
+      points = Array.from(m.values());
+      points.sort((a,b)=>a.t-b.t);
+      points = points.slice(-CFG.maxPoints);
+    }
+    save();
+    renderPoints();
+    recomputeBest();
+  }
+
+  async function runOneSample(){
+    if(!pos){
       log("⏳ Чекаю GPS…");
       return;
     }
-    if (!canAddPoint(currentPos)) {
-      log("…майже не зрушив — пропуск точки");
-      return;
-    }
 
-    setNetStatus(true, "Тестую…");
-    const ping = await testPing();
-    const down = await testDownloadMbps();
+    const acc = accMeters;
 
-    const ok = isFinite(down) || isFinite(ping);
-    if (!ok){
-      setNetStatus(false, "Тест не вдався");
-      log("❌ Тест не вдався (слабкий інтернет/блок).");
-      return;
-    }
+    // If accuracy is very bad, still test, but mark it (you can still find “best corner” in building)
+    const accPenalty = (acc > CFG.minAccMeters) ? " (acc weak)" : "";
 
-    const downMbps = isFinite(down) ? down : 0;
-    const pingMs  = isFinite(ping) ? ping : 999;
+    scanState.textContent = "scan: testing…";
+    const p1 = await measurePing();
 
-    const p = {
-      lat: currentPos.lat,
-      lon: currentPos.lon,
-      acc: currentPos.acc,
-      downMbps,
-      pingMs,
-      score: calcScore(downMbps, pingMs),
-      t: Date.now()
+    // auto weakMode: if ping huge or fail — switch to smaller download
+    weakMode = p1.fail || p1.ping > 220;
+
+    const dl = await measureDownload(weakMode);
+    const anyFail = p1.fail || dl.fail;
+
+    const score = computeScore(p1.ping, p1.jitter, dl.downMbps, anyFail);
+
+    scoreNow.textContent = score.toFixed(0);
+    netNow.textContent = `ping: ${Math.round(p1.ping)}ms • jit: ${Math.round(p1.jitter)}ms • down: ${dl.downMbps.toFixed(2)} Mbps${weakMode?" • weak":""}`;
+
+    const point = {
+      t: Date.now(),
+      lat: pos.lat,
+      lon: pos.lon,
+      acc,
+      ping: p1.ping,
+      jitter: p1.jitter,
+      downMbps: dl.downMbps,
+      score,
+      fail: anyFail
     };
 
-    points.push(p);
-    if (points.length > SETTINGS.maxPoints) points = points.slice(-SETTINGS.maxPoints);
+    pushPoint(point);
 
-    savePoints();
-    updateBest();
-    renderList();
-
-    setNetStatus(true, `OK: ${fmtMbps(downMbps)} · ${fmtMs(pingMs)}`);
-    log(`✅ Точка: ${fmtMbps(downMbps)} | ping ${fmtMs(pingMs)} | score ${p.score.toFixed(1)}`);
+    log(`📍 + point: score ${score.toFixed(0)} | ping ${Math.round(p1.ping)}ms | down ${dl.downMbps.toFixed(2)} Mbps${accPenalty}`);
+    scanState.textContent = "scan: running";
+    setStatus("ok", "Скан працює");
+    lastSampleAt = Date.now();
+    lastSamplePos = { ...pos };
   }
 
   function startScan(){
-    if (scanning) return;
+    if(scanning) return;
     scanning = true;
     btnStart.disabled = true;
     btnStop.disabled = false;
-    setNetStatus(true, "Сканую…");
+    scanState.textContent = "scan: running";
     log("▶️ Start Scan");
 
-    // одразу раз
-    doScanOnce();
+    startGPS();
 
-    timerId = setInterval(doScanOnce, SETTINGS.scanIntervalMs);
+    const loop = async () => {
+      if(!scanning) return;
+      try{
+        if(shouldSample()) await runOneSample();
+      }catch(e){
+        log("❌ Scan error: " + (e?.message||e));
+        setStatus("bad","Scan error");
+      }finally{
+        if(scanning) loopTimer = setTimeout(loop, CFG.sampleEveryMs);
+      }
+    };
+    loop();
   }
 
   function stopScan(){
-    if (!scanning) return;
+    if(!scanning) return;
     scanning = false;
     btnStart.disabled = false;
     btnStop.disabled = true;
-    setNetStatus(true, "Зупинено");
+    scanState.textContent = "scan: idle";
     log("⏹ Stop");
-    if (timerId){
-      clearInterval(timerId);
-      timerId = null;
-    }
+    setStatus("", "Зупинено");
+
+    if(loopTimer) clearTimeout(loopTimer);
+    loopTimer = null;
+  }
+
+  function fixHelp(){
+    log("🛠 Fix: якщо GPS denied — iPhone Settings → Privacy → Location Services → Safari Websites → While Using.");
+    log("🛠 Fix: Safari → AA → Website Settings → Location → Allow.");
+    log("🛠 Fix: якщо компас не працює — натисни 'Дозволити компас' і підтверди.");
+    alert(
+      "Fix GPS/Permissions:\n\n" +
+      "1) iPhone: Settings → Privacy & Security → Location Services → ON\n" +
+      "2) Там же: Safari Websites → While Using (+ Precise)\n" +
+      "3) Safari: AA → Website Settings → Location → Allow\n" +
+      "4) Компас: натисни кнопку 'Дозволити компас'\n\n" +
+      "Потім онови сторінку і натисни Start Scan."
+    );
+  }
+
+  function exportJSON(){
+    const data = JSON.stringify({ v:3, points }, null, 2);
+    const blob = new Blob([data], {type:"application/json"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "internet-locator-points.json";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url), 1000);
+    log("⬇️ Export JSON");
+  }
+
+  function importJSON(){
+    const inp = document.createElement("input");
+    inp.type = "file";
+    inp.accept = "application/json";
+    inp.onchange = async () => {
+      const f = inp.files?.[0];
+      if(!f) return;
+      const txt = await f.text();
+      try{
+        const obj = JSON.parse(txt);
+        if(obj && Array.isArray(obj.points)){
+          points = obj.points.filter(p => p && typeof p.lat==="number" && typeof p.lon==="number" && typeof p.score==="number");
+          save();
+          renderPoints();
+          recomputeBest();
+          log("⬆️ Import JSON: OK ("+points.length+")");
+        }
+          function importJSON(){
+    const inp = document.createElement("input");
+    inp.type = "file";
+    inp.accept = "application/json";
+    inp.onchange = async () => {
+      const f = inp.files?.[0];
+      if(!f) return;
+      const txt = await f.text();
+      try{
+        const obj = JSON.parse(txt);
+        if(obj && Array.isArray(obj.points)){
+          points = obj.points.filter(p =>
+            p && typeof p.lat==="number" && typeof p.lon==="number" &&
+            typeof p.score==="number" && typeof p.t==="number"
+          );
+          save();
+          renderPoints();
+          recomputeBest();
+          log(`⬆️ Import JSON: OK (${points.length})`);
+          setStatus("ok","Import OK");
+        } else {
+          log("❌ Import: неправильний формат JSON (нема points[])");
+          setStatus("bad","Import fail");
+          alert("Неправильний файл. Очікую JSON з полем points[]");
+        }
+      }catch(e){
+        log("❌ Import JSON error: " + (e?.message||e));
+        setStatus("bad","Import error");
+        alert("Помилка читання JSON: " + (e?.message||e));
+      }
+    };
+    inp.click();
   }
 
   function clearAll(){
+    if(!confirm("Очистити всі точки?")) return;
     points = [];
-    savePoints();
-    updateBest();
-    renderList();
-    log("🗑 Очищено точки");
+    save();
+    renderPoints();
+    recomputeBest();
+    log("🗑 Clear: points removed");
+    setStatus("", "Очищено");
   }
 
-  // -------------------------
-  // Init
-  // -------------------------
-  function init(){
-    attachOrientation();
-    startGeo();
-    updateBest();
-    renderList();
-    setNetStatus(true, "Готово (дай доступи)");
-    log("Готово. Натисни 'Дозволити компас' і 'Start Scan'.");
-  }
-
+  // ===== UI wiring =====
+  btnCompass.addEventListener("click", requestCompass);
   btnStart.addEventListener("click", startScan);
   btnStop.addEventListener("click", stopScan);
-  btnCompass.addEventListener("click", requestCompassPermission);
+  btnFix.addEventListener("click", fixHelp);
+  btnExport.addEventListener("click", exportJSON);
+  btnImport.addEventListener("click", importJSON);
   btnClear.addEventListener("click", clearAll);
 
-  window.addEventListener("visibilitychange", () => {
-    // якщо згорнув — зупинимо скан щоб не палити трафік
-    if (document.hidden && scanning) stopScan();
-  });
-
-  init();
+  // ===== Boot =====
+  load();
+  renderPoints();
+  recomputeBest();
+  updateArrow();
+  startGPS(); // одразу просимо GPS (щоб не чекати при Start)
+  log("Готово. Натисни 'Дозволити компас' і 'Start Scan'.");
 })();
 </script>
 </body>
